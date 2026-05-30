@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>لوحة تحكم · أحمد بُنَّه</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tajawal', sans-serif; background: #0a0f0d; min-height: 100vh; color: #e8f5f0; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+  .container { width: 100%; max-width: 480px; }
+
+  /* LOGIN */
+  #loginScreen { background: #111a16; border: 1px solid #1D9E75; border-radius: 20px; padding: 2.5rem 2rem; text-align: center; box-shadow: 0 0 60px rgba(29,158,117,0.08); }
+  .lock-icon { font-size: 48px; margin-bottom: 1rem; }
+  .login-title { font-size: 22px; font-weight: 900; color: #1D9E75; margin-bottom: 6px; }
+  .login-sub { font-size: 13px; color: #5a8a78; margin-bottom: 2rem; }
+  .input-wrap input { width: 100%; background: #0d1610; border: 1.5px solid #1e3328; border-radius: 12px; padding: 14px 16px; font-family: 'Tajawal', sans-serif; font-size: 15px; color: #e8f5f0; outline: none; transition: border-color 0.2s; text-align: right; direction: ltr; margin-bottom: 1rem; }
+  .input-wrap input:focus { border-color: #1D9E75; }
+  .input-wrap input::placeholder { color: #3a5c4e; }
+  .btn-login { width: 100%; background: #1D9E75; color: #fff; border: none; border-radius: 12px; padding: 14px; font-family: 'Tajawal', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.1s; }
+  .btn-login:hover { background: #17845f; transform: translateY(-1px); }
+  .error-msg { color: #ff6b6b; font-size: 13px; margin-top: 10px; display: none; }
+
+  /* DASHBOARD */
+  #dashboard { display: none; }
+  .dash-header { text-align: center; margin-bottom: 2rem; }
+  .dash-header h1 { font-size: 20px; font-weight: 900; color: #1D9E75; margin-bottom: 4px; }
+  .dash-header p { font-size: 13px; color: #5a8a78; }
+
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.5rem; }
+  .stat-card { background: #111a16; border: 1px solid #1e3328; border-radius: 16px; padding: 1.4rem 1rem; text-align: center; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: #1D9E75; border-radius: 3px 3px 0 0; }
+  .stat-card.wide { grid-column: 1 / -1; }
+  .stat-card.blue::before { background: #229ED9; }
+  .stat-card.orange::before { background: #f59e0b; }
+  .stat-number { font-size: 40px; font-weight: 900; color: #1D9E75; line-height: 1; margin-bottom: 6px; }
+  .stat-card.blue .stat-number { color: #229ED9; }
+  .stat-card.orange .stat-number { color: #f59e0b; }
+  .stat-label { font-size: 12px; color: #5a8a78; font-weight: 700; }
+
+  .daily-box { background: #111a16; border: 1px solid #1e3328; border-radius: 14px; padding: 1.2rem; margin-bottom: 1rem; }
+  .daily-box h3 { font-size: 13px; color: #5a8a78; font-weight: 700; margin-bottom: 1rem; letter-spacing: 0.5px; }
+  .day-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1a2e25; }
+  .day-row:last-child { border-bottom: none; }
+  .day-name { font-size: 13px; color: #9FE1CB; }
+  .day-count { font-size: 14px; font-weight: 900; color: #1D9E75; }
+  .day-bar-wrap { flex: 1; margin: 0 12px; height: 6px; background: #1a2e25; border-radius: 3px; overflow: hidden; }
+  .day-bar { height: 100%; background: #1D9E75; border-radius: 3px; transition: width 0.6s ease; }
+
+  .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #1D9E75; margin-left: 6px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .action-btns { display: flex; gap: 10px; margin-bottom: 1rem; }
+  .refresh-btn { flex: 1; background: #0d1f18; border: 1px solid #1D9E75; border-radius: 12px; padding: 12px; font-family: 'Tajawal', sans-serif; font-size: 14px; color: #1D9E75; cursor: pointer; font-weight: 700; transition: background 0.2s; }
+  .refresh-btn:hover { background: #132b1f; }
+  .logout-btn { flex: 1; background: transparent; border: 1px solid #1e3328; border-radius: 12px; padding: 12px; font-family: 'Tajawal', sans-serif; font-size: 14px; color: #5a8a78; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+  .logout-btn:hover { border-color: #ff6b6b; color: #ff6b6b; }
+
+  .loading-overlay { text-align: center; padding: 2rem; color: #5a8a78; font-size: 14px; }
+  .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #1e3328; border-top-color: #1D9E75; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="lock-icon">🔐</div>
+    <h2 class="login-title">لوحة تحكم المشرف</h2>
+    <p class="login-sub">أدخل بريدك الإلكتروني للمتابعة</p>
+    <div class="input-wrap">
+      <input type="email" id="emailInput" placeholder="ahmedbonnh9@gmail.com" autocomplete="off"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">دخول ←</button>
+    <p class="error-msg" id="errMsg">⛔ غير مصرح لك بالدخول</p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <div class="dash-header">
+      <h1>📊 إحصائيات الزيارات <span class="live-dot"></span></h1>
+      <p id="dashDate"></p>
+    </div>
+
+    <div id="loadingState" class="loading-overlay">
+      <div class="spinner"></div><br/>جاري تحميل البيانات من Firebase...
+    </div>
+
+    <div id="statsContent" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card wide">
+          <div class="stat-number" id="statTotal">—</div>
+          <div class="stat-label">🌍 إجمالي الزيارات من كل الأجهزة</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-number" id="statToday">—</div>
+          <div class="stat-label">📅 زيارات اليوم</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-number" id="statDays">—</div>
+          <div class="stat-label">📆 أيام نشطة</div>
+        </div>
+      </div>
+
+      <div class="daily-box">
+        <h3>📈 آخر 7 أيام</h3>
+        <div id="dailyRows">—</div>
+      </div>
+    </div>
+
+    <div class="action-btns">
+      <button class="refresh-btn" onclick="loadStats()">🔄 تحديث</button>
+      <button class="logout-btn" onclick="doLogout()">خروج</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const ADMIN_EMAIL = 'ahmedbonnh9@gmail.com';
+const DB = 'https://ahmed-bonnh-visits-default-rtdb.firebaseio.com';
+
+document.getElementById('emailInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogin() {
+  const val = document.getElementById('emailInput').value.trim().toLowerCase();
+  if (val === ADMIN_EMAIL) {
+    sessionStorage.setItem('ab_auth', '1');
+    document.getElementById('errMsg').style.display = 'none';
+    showDashboard();
+  } else {
+    document.getElementById('errMsg').style.display = 'block';
+    document.getElementById('emailInput').style.borderColor = '#ff6b6b';
+    setTimeout(() => document.getElementById('emailInput').style.borderColor = '', 1500);
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('ab_auth');
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'block';
+  document.getElementById('emailInput').value = '';
+}
+
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('ar-EG', {
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
+  });
+  loadStats();
+}
+
+async function loadStats() {
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('statsContent').style.display = 'none';
+
+  try {
+    // جلب كل بيانات الإحصائيات
+    const [totalRes, dailyRes] = await Promise.all([
+      fetch(`${DB}/stats/total.json`),
+      fetch(`${DB}/stats/daily.json`)
+    ]);
+
+    const totalData = await totalRes.json();
+    const dailyData = await dailyRes.json();
+
+    // حساب الإجمالي الكلي
+    const total = totalData ? Object.keys(totalData).length : 0;
+
+    // حساب بيانات الأيام
+    const dailyMap = {};
+    if (dailyData) {
+      for (const [date, visits] of Object.entries(dailyData)) {
+        dailyMap[date] = Object.keys(visits).length;
+      }
+    }
+
+    const activeDays = Object.keys(dailyMap).length;
+    const today = new Date().toISOString().split('T')[0];
+    const todayCount = dailyMap[today] || 0;
+
+    // آخر 7 أيام
+    const last7 = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      const label = i === 0 ? 'اليوم' : i === 1 ? 'أمس' :
+        d.toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' });
+      last7.push({ key, label, count: dailyMap[key] || 0 });
+    }
+
+    const maxCount = Math.max(...last7.map(d => d.count), 1);
+
+    // عرض البيانات
+    animateNum('statTotal', total);
+    animateNum('statToday', todayCount);
+    animateNum('statDays', activeDays);
+
+    const rows = last7.map(d => `
+      <div class="day-row">
+        <span class="day-name">${d.label}</span>
+        <div class="day-bar-wrap">
+          <div class="day-bar" style="width:${Math.round((d.count/maxCount)*100)}%"></div>
+        </div>
+        <span class="day-count">${d.count.toLocaleString('ar')}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('dailyRows').innerHTML = rows;
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('statsContent').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('loadingState').innerHTML = '⚠️ تعذر الاتصال بـ Firebase. تحقق من الإنترنت.';
+  }
+}
+
+function animateNum(id, target) {
+  const el = document.getElementById(id);
+  const duration = 800;
+  const start = performance.now();
+  function tick(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * ease).toLocaleString('ar');
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// تحقق تلقائي
+if (sessionStorage.getItem('ab_auth') === '1') showDashboard();
+</script>
+</body>
+</html>
